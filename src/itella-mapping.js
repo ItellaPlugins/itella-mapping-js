@@ -499,7 +499,7 @@ class itellaMapping {
     });
     this._pickupIcon = new Icon({ iconUrl: this.images_url + 'marker.png' });
 
-    L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
+    L.tileLayer('https://b.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.mijora.lt">Mijora</a>'
     }).addTo(this._map);
     this._markerLayer = L.featureGroup();
