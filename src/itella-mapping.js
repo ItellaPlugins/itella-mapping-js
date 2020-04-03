@@ -2,7 +2,7 @@ class itellaMapping {
   constructor(el) {
 
     /* Itella Mapping version */
-    this.version = '1.0.0';
+    this.version = '1.0.3';
 
     this._isDebug = false;
 
@@ -394,7 +394,10 @@ class itellaMapping {
   }
 
   setSelection(id, manual = false) {
-    let location = this.getLocationById(id);
+    let location = this.getLocationByPupCode(id);
+    if (!location) { // try looking by ID
+      location = this.getLocationById(id);
+    }
 
     if (typeof location !== 'undefined') {
       this.selectedPoint = location;
@@ -453,6 +456,9 @@ class itellaMapping {
     if (location.customerServicePhoneNumber !== null) {
       contactHTML += `<li>${location.customerServicePhoneNumber}</li>`;
     }
+    if (location.additionalInfo !== null) {
+      contactHTML += `<li>${location.additionalInfo}</li>`;
+    }
     contacts.innerHTML = contactHTML;
 
     var drpd = this.UI.modal.querySelector('.itella-select .dropdown');
@@ -475,6 +481,12 @@ class itellaMapping {
   getLocationById(id) {
     return this.findLocInArray(function (loc) {
       return loc.id == id;
+    }, this.locations);
+  }
+
+  getLocationByPupCode(id) {
+    return this.findLocInArray(function (loc) {
+      return loc.pupCode == id;
     }, this.locations);
   }
 
