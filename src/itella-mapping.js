@@ -511,8 +511,9 @@ class itellaMapping {
     });
     this._pickupIcon = new Icon({ iconUrl: this.images_url + 'marker.png' });
 
-    L.tileLayer('https://b.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.mijora.lt">Mijora</a>'
+    L.tileLayer('https://map.plugins.itella.com/tile/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.mijora.lt">Mijora</a>' +
+        ' | Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
     }).addTo(this._map);
     this._markerLayer = L.featureGroup();
     this._map.addLayer(this._markerLayer);
