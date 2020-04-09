@@ -616,7 +616,7 @@ class itellaMapping {
 
       /* check if we allready have html object, otherwise create new one */
       let li = Object.prototype.toString.call(loc._li) == '[object HTMLLIElement]' ? loc._li : _this.createElement('li');
-      li.innerHTML = loc.publicName;
+      li.innerHTML = loc.publicName + ', ' + loc.address.address;
       if (typeof loc.distance != 'undefined') {
         let span = _this.createElement('span');
         span.innerText = loc.distance.toFixed(2);
