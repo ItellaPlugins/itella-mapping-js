@@ -2,7 +2,7 @@ class itellaMapping {
   constructor(el) {
 
     /* Itella Mapping version */
-    this.version = '1.0.3';
+    this.version = '1.0.4';
 
     this._isDebug = false;
 
@@ -420,7 +420,7 @@ class itellaMapping {
       });
     }
     let selectedEl = this.UI.container.getElementsByClassName('itella-chosen-point')[0];
-    selectedEl.innerText = this.selectedPoint.publicName;
+    selectedEl.innerText = this.selectedPoint.publicName + ', ' + this.selectedPoint.address.address;
 
     this.hideEl(this.UI.modal);
   }
@@ -462,7 +462,7 @@ class itellaMapping {
     contacts.innerHTML = contactHTML;
 
     var drpd = this.UI.modal.querySelector('.itella-select .dropdown');
-    drpd.innerText = location.publicName;
+    drpd.innerText = location.publicName + ', ' + location.address.address;
 
     return this;
   }
