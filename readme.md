@@ -14,3 +14,19 @@ Include dependencies before using itella-mapping.js
 <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 ```
+
+### Testing
+
+```
+npm install
+npm start
+```
+Starts local server usually at localhost:8080 and watches for changes in src folder
+
+### Building itella-mapping.js
+
+```
+npm install
+npm run build
+```
+This will create both css and js files in dist folder (src/images is needed as well).
