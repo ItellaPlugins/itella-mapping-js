@@ -1,6 +1,6 @@
 {
   "name": "itella-mapping",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Itella pickup points map and selection",
   "main": "index.js",
   "directories": {
