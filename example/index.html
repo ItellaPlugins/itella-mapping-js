@@ -18,9 +18,11 @@
 </head>
 
 <body>
+  <form action="#">
   <div>
     <label><input type="radio" name="fake" id="map-test" checked>Itella Shipping</label>
   </div>
+</form>
 
   <script>
     document.addEventListener('DOMContentLoaded', init);
@@ -56,7 +58,8 @@
           console.log(this.selectedPoint); 
           let radio = document.getElementById('map-test');
           radio.value = this.selectedPoint.id;
-        });
+        })
+        .setDebug(true);
 
       // load demo locations
       var oReq = new XMLHttpRequest();
