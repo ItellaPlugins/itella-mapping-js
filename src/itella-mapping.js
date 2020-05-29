@@ -69,21 +69,9 @@ class itellaMapping {
     if (typeof L === 'undefined') {
       console.error(this.strings.error_leaflet);
     }
-    //let _this = this;
+
     itellaRegisterLeafletPlugins();
     this.observeRemoval();
-    // this.observer = new MutationObserver(function (mutationsList, observer) {
-    //   //console.log(mutationsList);
-    //   if (!document.getElementById(_this._containerID)) {
-    //     console.log('Cleaning up modal:', _this._modalID);
-    //     let oldModal = document.getElementById(_this._modalID);
-    //     if (oldModal) {
-    //       oldModal.parentNode.removeChild(oldModal);
-    //     }
-    //     this.disconnect();
-    //   }
-    // });
-    // this.observer.observe(document, { childList: true, subtree: true });
   }
 
   observeRemoval() {
@@ -211,7 +199,6 @@ class itellaMapping {
     }
 
     this.UI.modal = modal;
-    //this.UI.container.appendChild(this.UI.modal);
     document.body.appendChild(this.UI.modal);
     this.UI.back_to_list_btn = this.UI.modal.querySelector('.itella-btn.itella-back');
 
@@ -301,15 +288,10 @@ class itellaMapping {
     this._markerLayer.on('clusterclick', function (a) {
       // a.layer is actually a cluster
       a.layer.zoomToBounds();
-      //_this.setMapView(_this._map.getCenter(), _this._map.getZoom());
     });
 
     this._markerLayer.on('click', function (e) {
       _this.removeActiveClass();
-      // _this._markerLayer.eachLayer(function (icon) {
-      //   if (typeof icon._icon != 'undefined')
-      //     L.DomUtil.removeClass(icon._icon, "active");
-      // });
       L.DomUtil.addClass(e.layer._icon, "active");
       _this.setMapView(e.layer.getLatLng(), _this._map.getZoom());
       let temp = _this.getLocationById(e.layer.options.pickupPointId);
@@ -530,15 +512,6 @@ class itellaMapping {
     if (this.selectedPoint && this.selectedPoint._marker._icon) {
       this.selectedPoint._marker._icon.classList.add('active');
     }
-    // No longer used
-    // this._markerLayer.eachLayer(function (icon) {
-    //   if (typeof icon._icon !== 'undefined') {
-    //     L.DomUtil.removeClass(icon._icon, "active");
-    //     if (icon.options.pickupPointId === id) {
-    //       L.DomUtil.addClass(icon._icon, "active");
-    //     }
-    //   }
-    // });
   }
 
   getLocationById(id) {
@@ -597,10 +570,8 @@ class itellaMapping {
 
   setMapView(targetLatLng, targetZoom) {
     if (window.matchMedia("(min-width: 769px)").matches) {
-      let offset = this.getElClientWidth(this.UI.modal.getElementsByClassName('itella-card')[0]); // / 2;
+      let offset = this.getElClientWidth(this.UI.modal.getElementsByClassName('itella-card')[0]);
       this._map._viewport.style.left = offset + 'px';
-      // let targetPoint = this._map.project(targetLatLng, targetZoom).subtract([offset, 0]);
-      // targetLatLng = this._map.unproject(targetPoint, targetZoom);
     } else {
       this._map._viewport.style.left = '0';
     }
@@ -704,7 +675,6 @@ class itellaMapping {
       listHTML.push(li);
       loc._li = li;
     });
-    //dropdown.append(listHTML);
     let docFrag = document.createDocumentFragment();
     listHTML.forEach(el => docFrag.appendChild(el));
     dropdown.appendChild(docFrag);
