@@ -7,6 +7,10 @@
 ### Fixed
 - Map modal is now attached at the end of document.body (fixes triggering form submit when using ENTER key inside map modal)
 
+### Updated
+- Removed unused code
+- updated build tools
+
 ## [1.2.1] - 2020-05-29
 ### Fixed
 - Leaflet plugins registration now first checks if plugin already registered (fixes activeArea plugin issue for multiple registrations)
