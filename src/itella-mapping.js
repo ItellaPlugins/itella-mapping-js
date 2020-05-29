@@ -2,7 +2,7 @@ class itellaMapping {
   constructor(el) {
 
     /* Itella Mapping version */
-    this.version = '1.2.1';
+    this.version = '1.2.2';
 
     this._isDebug = false;
 
@@ -63,12 +63,43 @@ class itellaMapping {
     this._isSearchResult = false;
 
     this._searchTimeoutId = null;
+    this._containerID = 'itella-' + Math.random().toString(36).substr(2, 6);
+    this._modalID = this._containerID + '-modal';
 
     if (typeof L === 'undefined') {
       console.error(this.strings.error_leaflet);
     }
-
+    //let _this = this;
     itellaRegisterLeafletPlugins();
+    this.observeRemoval();
+    // this.observer = new MutationObserver(function (mutationsList, observer) {
+    //   //console.log(mutationsList);
+    //   if (!document.getElementById(_this._containerID)) {
+    //     console.log('Cleaning up modal:', _this._modalID);
+    //     let oldModal = document.getElementById(_this._modalID);
+    //     if (oldModal) {
+    //       oldModal.parentNode.removeChild(oldModal);
+    //     }
+    //     this.disconnect();
+    //   }
+    // });
+    // this.observer.observe(document, { childList: true, subtree: true });
+  }
+
+  observeRemoval() {
+    let _this = this;
+    new MutationObserver(function (mutations) {
+      if (!document.getElementById(_this._containerID)) {
+        if (_this._isDebug) {
+          console.log('Cleaning up modal ID:', _this._modalID);
+        }
+        let oldModal = document.getElementById(_this._modalID);
+        if (oldModal) {
+          oldModal.parentNode.removeChild(oldModal);
+        }
+        this.disconnect();
+      }
+    }).observe(document, { childList: true, subtree: true });
   }
 
   setImagesUrl(images_url) {
@@ -171,6 +202,7 @@ class itellaMapping {
     }
     let modal = this.createElement('div', ['itella-mapping-modal', 'hidden']);
     modal.innerHTML = template;
+    modal.id = this._modalID;
 
     /* if exists destroy and rebuild */
     if (this.UI.modal !== null) {
@@ -179,8 +211,9 @@ class itellaMapping {
     }
 
     this.UI.modal = modal;
-    this.UI.container.appendChild(this.UI.modal);
-    this.UI.back_to_list_btn = this.UI.container.querySelector('.itella-btn.itella-back');
+    //this.UI.container.appendChild(this.UI.modal);
+    document.body.appendChild(this.UI.modal);
+    this.UI.back_to_list_btn = this.UI.modal.querySelector('.itella-btn.itella-back');
 
     return this;
   }
@@ -191,6 +224,7 @@ class itellaMapping {
       <a href='#' class="itella-modal-btn">${this.strings.select_pickup_point_btn}</a>
     `;
     let container = this.createElement('div', ['itella-shipping-container']);
+    container.id = this._containerID;
     container.innerHTML = template;
 
     this.UI.container = container;
@@ -215,7 +249,7 @@ class itellaMapping {
       }
     });
 
-    this.UI.container.getElementsByClassName('search-input')[0].addEventListener('keyup', function (e) {
+    this.UI.modal.getElementsByClassName('search-input')[0].addEventListener('keyup', function (e) {
       e.preventDefault();
       let force = false;
       /* Enter key forces search to not wait */
@@ -225,12 +259,12 @@ class itellaMapping {
       _this.searchNearestDebounce(this.value, force);
     });
 
-    this.UI.container.getElementsByClassName('close-modal')[0].addEventListener('click', function (e) {
+    this.UI.modal.getElementsByClassName('close-modal')[0].addEventListener('click', function (e) {
       e.preventDefault();
       _this.hideEl(_this.UI.modal);
     });
 
-    this.UI.container.getElementsByClassName('itella-submit')[0].addEventListener('click', function (e) {
+    this.UI.modal.getElementsByClassName('itella-submit')[0].addEventListener('click', function (e) {
       e.preventDefault();
       _this.submitSelection();
     });
@@ -309,7 +343,7 @@ class itellaMapping {
     this.locations.sort(this.sortByCity);
     this.updateDropdown();
     this.UI.modal.querySelector('.search-by').innerText = '';
-    this.UI.container.getElementsByClassName('search-input')[0].value = '';
+    this.UI.modal.getElementsByClassName('search-input')[0].value = '';
   }
 
   searchNearestDebounce(search, force) {
@@ -397,10 +431,11 @@ class itellaMapping {
 
   registerCallback(callback) {
     if (typeof callback !== 'function') {
-      return false;
+      return this; // ignore invalid argument
     }
 
-    return this.callbackList.push(callback);
+    this.callbackList.push(callback);
+    return this;
   }
 
   /**
@@ -492,6 +527,9 @@ class itellaMapping {
   }
 
   setActiveMarkerByTerminalId(id) {
+    if (this.selectedPoint && this.selectedPoint._marker._icon) {
+      this.selectedPoint._marker._icon.classList.add('active');
+    }
     // No longer used
     // this._markerLayer.eachLayer(function (icon) {
     //   if (typeof icon._icon !== 'undefined') {
@@ -559,7 +597,7 @@ class itellaMapping {
 
   setMapView(targetLatLng, targetZoom) {
     if (window.matchMedia("(min-width: 769px)").matches) {
-      let offset = this.getElClientWidth(this.UI.container.getElementsByClassName('itella-card')[0]); // / 2;
+      let offset = this.getElClientWidth(this.UI.modal.getElementsByClassName('itella-card')[0]); // / 2;
       this._map._viewport.style.left = offset + 'px';
       // let targetPoint = this._map.project(targetLatLng, targetZoom).subtract([offset, 0]);
       // targetLatLng = this._map.unproject(targetPoint, targetZoom);
