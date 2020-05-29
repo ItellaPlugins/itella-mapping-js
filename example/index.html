@@ -27,12 +27,16 @@
 
     function init(e) {
       // adding to global for easier debugging, pass in root element where to build all HTML
-      window.itella = new itellaMapping(document.getElementById('map-test').parentNode);
+      window.itellaCount = 0;
+      if (typeof window['itella'+itellaCount] != 'undefined') {
+        itellaCount++;
+      }
+      window['itella'+itellaCount] = new itellaMapping(document.getElementById('map-test').parentNode);
       
       terminals = [];
         //.filter(terminal=>terminal.partnerType == 'POSTI')
         //.map(terminal=>{return {id: terminal.id, location: terminal.location, publicName: terminal.publicName}});
-      itella
+        window['itella'+itellaCount]
         // set base url where images are placed
         .setImagesUrl('images/')
         // configure translation
@@ -57,9 +61,9 @@
       // load demo locations
       var oReq = new XMLHttpRequest();
       /* access itella class inside response handler */
-      oReq.itella = itella;
+      oReq.itella = window['itella'+itellaCount];
       oReq.addEventListener('loadend', loadJson);
-      oReq.open('GET', "example/locations_FI.json");
+      oReq.open('GET', "example/locations_LT.json");
       oReq.send();
     }
 
