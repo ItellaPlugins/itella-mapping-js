@@ -605,6 +605,14 @@ class itellaMapping {
   sortByCity(a, b) {
     let result = a.address.municipality.toLowerCase().localeCompare(b.address.municipality.toLowerCase());
     if (result == 0) {
+      if (a.type.toUpperCase() == 'SMARTPOST' && b.type.toUpperCase() != 'SMARTPOST') {
+        result = -1;
+      }
+      if (b.type.toUpperCase() == 'SMARTPOST' && a.type.toUpperCase() != 'SMARTPOST') {
+        result = 1;
+      }
+    }
+    if (result == 0) {
       result = a.publicName.toLowerCase().localeCompare(b.publicName.toLowerCase());
     }
     return result;
