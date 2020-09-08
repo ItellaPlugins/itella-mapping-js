@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.3] - 2020-09-08
+### Changed
+- Sorting when there is no distance changed to prioritize SMARTPOST type terminals
+
 ## [1.2.2] - 2020-05-29
 ### Added
 - MutationObserver to detect removal of main container (element displaying currently selected point and map open button) so modal is also removed

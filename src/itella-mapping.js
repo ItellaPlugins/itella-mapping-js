@@ -2,7 +2,7 @@ class itellaMapping {
   constructor(el) {
 
     /* Itella Mapping version */
-    this.version = '1.2.2';
+    this.version = '1.2.3';
 
     this._isDebug = false;
 
@@ -604,6 +604,14 @@ class itellaMapping {
 
   sortByCity(a, b) {
     let result = a.address.municipality.toLowerCase().localeCompare(b.address.municipality.toLowerCase());
+    if (result == 0) {
+      if (a.type.toUpperCase() == 'SMARTPOST' && b.type.toUpperCase() != 'SMARTPOST') {
+        result = -1;
+      }
+      if (b.type.toUpperCase() == 'SMARTPOST' && a.type.toUpperCase() != 'SMARTPOST') {
+        result = 1;
+      }
+    }
     if (result == 0) {
       result = a.publicName.toLowerCase().localeCompare(b.publicName.toLowerCase());
     }
