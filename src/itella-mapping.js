@@ -2,7 +2,7 @@ class itellaMapping {
   constructor(el) {
 
     /* Itella Mapping version */
-    this.version = '1.2.2';
+    this.version = '1.2.3';
 
     this._isDebug = false;
 
