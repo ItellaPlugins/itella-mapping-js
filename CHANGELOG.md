@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2020-10-12
+### Added
+- It is now possible to build only dropdown instead of modal (it has limitations on preventing ENTER key in search input due to how forms work). To enable dropdown only mode to init function should be initiated with false variable (`itella.init(false)`)
+
 ## [1.2.3] - 2020-09-08
 ### Changed
 - Sorting when there is no distance changed to prioritize SMARTPOST type terminals

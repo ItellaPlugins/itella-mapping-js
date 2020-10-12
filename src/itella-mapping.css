@@ -1,4 +1,5 @@
-.itella-mapping-modal * {
+.itella-mapping-modal *,
+.itella-shipping-container * {
   box-sizing: border-box;
 }
 
