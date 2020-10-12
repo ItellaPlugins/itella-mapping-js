@@ -2,7 +2,7 @@ class itellaMapping {
   constructor(el) {
 
     /* Itella Mapping version */
-    this.version = '1.2.3';
+    this.version = '1.3.0';
 
     this._isDebug = false;
 
@@ -70,7 +70,6 @@ class itellaMapping {
       console.error(this.strings.error_leaflet);
     }
 
-    itellaRegisterLeafletPlugins();
     this.observeRemoval();
   }
 
@@ -104,12 +103,19 @@ class itellaMapping {
     return this.strings;
   }
 
-  init() {
+  init(isModal = true) {
+    this.isModal = isModal;
     if (typeof this.mount !== 'undefined') {
-      this.buildContainer()
-        .buildModal()
-        .setupLeafletMap(this.UI.modal.getElementsByClassName('itella-map')[0])
-        .attachListeners();
+      this.buildContainer();
+
+      if (this.isModal) {
+        /* Load leaflet plugins */
+        itellaRegisterLeafletPlugins();
+        this.buildModal()
+          .setupLeafletMap(this.UI.modal.getElementsByClassName('itella-map')[0])
+      }
+
+      this.attachListeners();
       return this;
     }
     return false;
@@ -205,7 +211,41 @@ class itellaMapping {
     return this;
   }
 
+  buildDropdown() {
+    // let template = `
+    //   <div class="itella-chosen-point">${this.strings.select_pickup_point}</div>
+    //   <a href='#' class="itella-modal-btn">${this.strings.select_pickup_point_btn}</a>
+    // `;
+    let template = `
+      <div class="itella-select">
+        <div class="dropdown">${this.strings.select_pickup_point}</div>
+        <div class="dropdown-inner">
+          <div class="search-bar">
+            <input type="text" placeholder="${this.strings.search_placeholder}" class="search-input">
+            <img src="${this.images_url}search.png" alt="Search">
+          </div>
+          <span class="search-by"></span>
+          <ul>
+            <li class="city">${this.strings.no_pickup_points}</li>
+          </ul>
+        </div>
+      </div>
+    `;
+    let container = this.createElement('div', ['itella-shipping-container']);
+    container.id = this._containerID;
+    container.innerHTML = template;
+
+    this.UI.container = container;
+    this.mount.appendChild(this.UI.container);
+
+    return this;
+  }
+
   buildContainer() {
+    if (!this.isModal) {
+      return this.buildDropdown();
+    }
+
     let template = `
       <div class="itella-chosen-point">${this.strings.select_pickup_point}</div>
       <a href='#' class="itella-modal-btn">${this.strings.select_pickup_point_btn}</a>
@@ -221,6 +261,82 @@ class itellaMapping {
   }
 
   attachListeners() {
+
+    if (this.isModal) {
+      this.modalListeners();
+
+      return this;
+    }
+
+    if (!this.isModal) {
+      this.dropdownListeners();
+
+      return this;
+    }
+
+    return this;
+  }
+
+  findClassElement(target, classToFind, iteration = 0) {
+    if (target.tagName === 'BODY') {
+      return null;
+    }
+
+    if (target instanceof HTMLElement && target.classList.contains(classToFind)) {
+      return target;
+    }
+
+    return target.parentElement ? this.findClassElement(target.parentElement, classToFind, ++iteration) : null;
+  }
+
+  dropdownListeners() {
+    let _this = this;
+    let select = _this.UI.container.querySelector('.itella-select');
+    let drpd = _this.UI.container.querySelector('.itella-select .dropdown');
+    let select_options = select.querySelector('.dropdown-inner');
+    drpd.addEventListener('click', function (e) {
+      e.preventDefault();
+      select.classList.toggle('open');
+    });
+
+    this.UI.container.getElementsByClassName('search-input')[0].addEventListener('keyup', function (e) {
+      e.preventDefault();
+      let force = false;
+      /* Enter key forces search to not wait */
+      if (e.keyCode == '13') {
+        force = true;
+      }
+      _this.searchNearestDebounce(this.value, force);
+    });
+
+    // document.body.addEventListener('click', function(e) {
+    //   let el = _this.findClassElement(e.target, 'itella-select');
+    //   if (!el) {
+    //     select.classList.remove('open');
+    //   }
+    //   console.log(el, e.target);
+    // });
+
+    this.UI.container.addEventListener('click', function (e) {
+      if (_this._isDebug) {
+        console.log('CLICKED HTML EL:', e.target.nodeName, e.target.dataset);
+      }
+      let el = _this.findClassElement(e.target, 'itella-terminal-data');
+      if (e.target.nodeName.toLowerCase() == 'li' && typeof e.target.dataset.id !== 'undefined') {
+        let point = _this.getLocationById(e.target.dataset.id);
+        if (_this._isDebug) {
+          console.log('Selected from dropdown:', point);
+        }
+        _this.selectedPoint = point;
+        _this.renderPointInfo(point);
+        select.classList.remove('open');
+        // _this.setMapView(point.location, _this.ZOOM_SELECTED);
+        // _this.setActiveMarkerByTerminalId(e.target.dataset.id);
+      }
+    });
+  }
+
+  modalListeners() {
     let _this = this;
     this.UI.container.getElementsByClassName('itella-modal-btn')[0].addEventListener('click', function (e) {
       e.preventDefault();
@@ -307,8 +423,6 @@ class itellaMapping {
         _this.selectedPoint._marker._icon.classList.add('active');
       }
     });
-
-    return this;
   }
 
   removeActiveClass() {
@@ -324,8 +438,8 @@ class itellaMapping {
     });
     this.locations.sort(this.sortByCity);
     this.updateDropdown();
-    this.UI.modal.querySelector('.search-by').innerText = '';
-    this.UI.modal.getElementsByClassName('search-input')[0].value = '';
+    this.UI[this.isModal ? 'modal' : 'container'].querySelector('.search-by').innerText = '';
+    this.UI[this.isModal ? 'modal' : 'container'].getElementsByClassName('search-input')[0].value = '';
   }
 
   searchNearestDebounce(search, force) {
@@ -357,7 +471,7 @@ class itellaMapping {
 
   _handleResponse() {
     let _this = this.itella;
-    let search_by = _this.UI.modal.querySelector('.search-by');
+    let search_by = _this.UI[_this.isModal ? 'modal' : 'container'].querySelector('.search-by');
     if (this.status != 200) {
       search_by.innerText = _this.strings.nothing_found;
       return false;
@@ -443,8 +557,10 @@ class itellaMapping {
     if (typeof location !== 'undefined') {
       this.selectedPoint = location;
       this.renderPointInfo(location);
-      this.setActiveMarkerByTerminalId(location.id);
-      this.setMapView(location.location, this.ZOOM_SELECTED);
+      if (this.isModal) {
+        this.setActiveMarkerByTerminalId(location.id);
+        this.setMapView(location.location, this.ZOOM_SELECTED);
+      }
       this.submitSelection(manual);
     }
   }
@@ -460,16 +576,30 @@ class itellaMapping {
         callback.call(_this, manual);
       });
     }
-    let selectedEl = this.UI.container.getElementsByClassName('itella-chosen-point')[0];
-    selectedEl.innerText = this.selectedPoint.publicName + ', ' + this.selectedPoint.address.address;
 
-    this.hideEl(this.UI.modal);
+    if (this.isModal) {
+      let selectedEl = this.UI.container.getElementsByClassName('itella-chosen-point')[0];
+      selectedEl.innerText = this.selectedPoint.publicName + ', ' + this.selectedPoint.address.address;
+
+      this.hideEl(this.UI.modal);
+    }
   }
 
   renderPointInfo(location) {
     this.locations.forEach(loc => loc._li.classList.remove('active'));
     location._li.classList.add('active');
 
+    var drpd = this.UI[this.isModal ? 'modal' : 'container'].querySelector('.itella-select .dropdown');
+    drpd.innerText = location.publicName + ', ' + location.address.address;
+
+    if (this.isModal) {
+      this.buildPointInfoForModal(location);
+    }
+
+    return this;
+  }
+
+  buildPointInfoForModal(location) {
     let pointInfo = this.UI.modal.querySelector('.point-info');
     let workhours = pointInfo.querySelector('.workhours ol');
     let contacts = pointInfo.querySelector('.contacts ul');
@@ -488,9 +618,9 @@ class itellaMapping {
 
     let contactHTML = '<div>' + this.strings.no_information + '</div>';
     contactHTML = `
-      <li>${location.address.streetName} ${location.address.streetNumber},</li>
-      <li>${location.address.municipality} ${location.address.postalCode}</li>
-    `;
+        <li>${location.address.streetName} ${location.address.streetNumber},</li>
+        <li>${location.address.municipality} ${location.address.postalCode}</li>
+      `;
     if (location.locationName !== null) {
       contactHTML += `<li>${location.locationName}</li>`;
     }
@@ -501,11 +631,6 @@ class itellaMapping {
       contactHTML += `<li>${location.additionalInfo}</li>`;
     }
     contacts.innerHTML = contactHTML;
-
-    var drpd = this.UI.modal.querySelector('.itella-select .dropdown');
-    drpd.innerText = location.publicName + ', ' + location.address.address;
-
-    return this;
   }
 
   setActiveMarkerByTerminalId(id) {
@@ -628,17 +753,22 @@ class itellaMapping {
     this.locations.sort(this.sortByCity);
 
     /* calculate defaultMapPos */
-    let _latlongArray = [];
-    this.locations.forEach(loc => {
-      _latlongArray.push(loc.location);
-    });
-    if (_latlongArray.length > 0) {
-      let bounds = new L.LatLngBounds(_latlongArray);
-      this._defaultMapPos = bounds.getCenter();
+    if (this.isModal) {
+      let _latlongArray = [];
+      this.locations.forEach(loc => {
+        _latlongArray.push(loc.location);
+      });
+      if (_latlongArray.length > 0) {
+        let bounds = new L.LatLngBounds(_latlongArray);
+        this._defaultMapPos = bounds.getCenter();
+      }
+
+      if (update) {
+        this.updateMapMarkers();
+      }
     }
 
     if (update) {
-      this.updateMapMarkers();
       this.updateDropdown();
     }
     return this;
@@ -653,7 +783,7 @@ class itellaMapping {
     /**
      * @type HTMLElement
      */
-    let dropdown = this.UI.modal.querySelector('.itella-select .dropdown-inner ul');
+    let dropdown = this.UI[this.isModal ? 'modal' : 'container'].querySelector('.itella-select .dropdown-inner ul');
 
     if (!this.locations.length) {
       dropdown.innerHTML = '<li class="city">' + this.strings.no_pickup_points + '</li>';
@@ -672,7 +802,7 @@ class itellaMapping {
       }
 
       /* check if we allready have html object, otherwise create new one */
-      let li = Object.prototype.toString.call(loc._li) == '[object HTMLLIElement]' ? loc._li : _this.createElement('li');
+      let li = Object.prototype.toString.call(loc._li) == '[object HTMLLIElement]' ? loc._li : _this.createElement('li', ['itella-terminal-data']);
       li.innerHTML = loc.publicName + ', ' + loc.address.address;
       if (typeof loc.distance != 'undefined') {
         let span = _this.createElement('span');
