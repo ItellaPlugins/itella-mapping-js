@@ -203,6 +203,10 @@
   position: relative;
 }
 
+.itella-shipping-container > .itella-select {
+  width: 100%;
+}
+
 .itella-select .dropdown {
   height: 30px;
   line-height: 24px;
