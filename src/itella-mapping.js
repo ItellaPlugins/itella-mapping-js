@@ -309,14 +309,6 @@ class itellaMapping {
       _this.searchNearestDebounce(this.value, force);
     });
 
-    // document.body.addEventListener('click', function(e) {
-    //   let el = _this.findClassElement(e.target, 'itella-select');
-    //   if (!el) {
-    //     select.classList.remove('open');
-    //   }
-    //   console.log(el, e.target);
-    // });
-
     this.UI.container.addEventListener('click', function (e) {
       if (_this._isDebug) {
         console.log('CLICKED HTML EL:', e.target.nodeName, e.target.dataset);
@@ -330,8 +322,7 @@ class itellaMapping {
         _this.selectedPoint = point;
         _this.renderPointInfo(point);
         select.classList.remove('open');
-        // _this.setMapView(point.location, _this.ZOOM_SELECTED);
-        // _this.setActiveMarkerByTerminalId(e.target.dataset.id);
+        _this.submitSelection();
       }
     });
   }
