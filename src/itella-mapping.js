@@ -666,8 +666,8 @@ class itellaMapping {
 
     let Icon = L.Icon.extend({
       options: {
-        iconSize: [29, 34],
-        iconAnchor: [15, 34],
+        iconSize: [30, 44],
+        iconAnchor: [15, 44],
         popupAnchor: [-3, -76]
       }
     });
