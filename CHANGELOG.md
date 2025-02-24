@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.2] - 2025-02-24
+### Changed
+- Colors and logos to Smartposti
+
 ## [1.3.1] - 2020-10-13
 ### Fixed
 - Fixed and issue where registered callbacks were not called in dropdown mode
