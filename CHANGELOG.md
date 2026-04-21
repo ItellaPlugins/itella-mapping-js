@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.3] - 2026-04-21
+### Changed
+- Added "km" label next to distance value in pickup point dropdown list
+- Replaced deprecated `keyCode` with `e.key` for keyboard event handling
+- Improved pickup point list item rendering method
+
+### Fixed
+- Fixed typos in `calculateDistance` method
+- Dropdown now closes when clicking outside in non-modal (dropdown-only) mode
+
+### Added
+- ARIA attributes for dropdown accessibility
+- Keyboard navigation support (Enter/Space to toggle, ArrowUp/ArrowDown to navigate, Escape to close)
+
 ## [1.3.2] - 2025-02-24
 ### Changed
 - Colors and logos to Smartposti

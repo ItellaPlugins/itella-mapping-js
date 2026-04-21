@@ -2,7 +2,7 @@ class itellaMapping {
   constructor(el) {
 
     /* Itella Mapping version */
-    this.version = '1.3.2';
+    this.version = '1.3.3';
 
     this._isDebug = false;
 
@@ -153,14 +153,14 @@ class itellaMapping {
         <div class="itella-card-content">
           <h3>${this.strings.selector_header}</h3>
           <div class="itella-select">
-            <div class="dropdown">${this.strings.select_pickup_point}</div>
+            <div class="dropdown" role="button" tabindex="0" aria-expanded="false" aria-haspopup="listbox">${this.strings.select_pickup_point}</div>
             <div class="dropdown-inner">
               <div class="search-bar">
-                <input type="text" placeholder="${this.strings.search_placeholder}" class="search-input">
+                <input type="text" placeholder="${this.strings.search_placeholder}" class="search-input" aria-label="${this.strings.search_placeholder}">
                 <img src="${this.images_url}search.png" alt="Search">
               </div>
               <span class="search-by"></span>
-              <ul>
+              <ul role="listbox">
                 <li class="city">${this.strings.no_pickup_points}</li>
               </ul>
             </div>
@@ -218,14 +218,14 @@ class itellaMapping {
     // `;
     let template = `
       <div class="itella-select">
-        <div class="dropdown">${this.strings.select_pickup_point}</div>
+        <div class="dropdown" role="button" tabindex="0" aria-expanded="false" aria-haspopup="listbox">${this.strings.select_pickup_point}</div>
         <div class="dropdown-inner">
           <div class="search-bar">
-            <input type="text" placeholder="${this.strings.search_placeholder}" class="search-input">
+            <input type="text" placeholder="${this.strings.search_placeholder}" class="search-input" aria-label="${this.strings.search_placeholder}">
             <img src="${this.images_url}search.png" alt="Search">
           </div>
           <span class="search-by"></span>
-          <ul>
+          <ul role="listbox">
             <li class="city">${this.strings.no_pickup_points}</li>
           </ul>
         </div>
@@ -289,6 +289,32 @@ class itellaMapping {
     return target.parentElement ? this.findClassElement(target.parentElement, classToFind, ++iteration) : null;
   }
 
+  toggleDropdown(select, drpd) {
+    select.classList.toggle('open');
+    drpd.setAttribute('aria-expanded', select.classList.contains('open'));
+  }
+
+  closeDropdown(select, drpd) {
+    select.classList.remove('open');
+    drpd.setAttribute('aria-expanded', 'false');
+    this.clearHighlight(select);
+  }
+
+  highlightDropdownItem(items, index) {
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.remove('highlighted');
+    }
+    items[index].classList.add('highlighted');
+    items[index].scrollIntoView({ block: 'nearest' });
+  }
+
+  clearHighlight(container) {
+    let highlighted = container.querySelectorAll('li.highlighted');
+    for (var i = 0; i < highlighted.length; i++) {
+      highlighted[i].classList.remove('highlighted');
+    }
+  }
+
   dropdownListeners() {
     let _this = this;
     let select = _this.UI.container.querySelector('.itella-select');
@@ -296,17 +322,58 @@ class itellaMapping {
     let select_options = select.querySelector('.dropdown-inner');
     drpd.addEventListener('click', function (e) {
       e.preventDefault();
-      select.classList.toggle('open');
+      _this.toggleDropdown(select, drpd);
+    });
+
+    drpd.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        _this.toggleDropdown(select, drpd);
+      }
+      if (e.key === 'Escape') {
+        _this.closeDropdown(select, drpd);
+      }
+    });
+
+    select.addEventListener('keydown', function (e) {
+      let items = select.querySelectorAll('li.itella-terminal-data');
+      if (!items.length) return;
+      let highlighted = select.querySelector('li.itella-terminal-data.highlighted');
+      let active = select.querySelector('li.itella-terminal-data.active');
+      let index = highlighted ? Array.prototype.indexOf.call(items, highlighted)
+        : (active ? Array.prototype.indexOf.call(items, active) : -1);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        index = Math.min(index + 1, items.length - 1);
+        _this.highlightDropdownItem(items, index);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        index = Math.max(index - 1, 0);
+        _this.highlightDropdownItem(items, index);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlighted) highlighted.click();
+      } else if (e.key === 'Escape') {
+        _this.closeDropdown(select, drpd);
+      }
     });
 
     this.UI.container.getElementsByClassName('search-input')[0].addEventListener('keyup', function (e) {
       e.preventDefault();
       let force = false;
       /* Enter key forces search to not wait */
-      if (e.keyCode == '13') {
+      if (e.key === 'Enter') {
         force = true;
       }
       _this.searchNearestDebounce(this.value, force);
+    });
+
+    document.addEventListener('click', function (e) {
+      if (select.classList.contains('open')
+        && !(select_options.contains(e.target) || drpd == e.target)
+      ) {
+        _this.closeDropdown(select, drpd);
+      }
     });
 
     this.UI.container.addEventListener('click', function (e) {
@@ -321,7 +388,7 @@ class itellaMapping {
         }
         _this.selectedPoint = point;
         _this.renderPointInfo(point);
-        select.classList.remove('open');
+        _this.closeDropdown(select, drpd);
         _this.submitSelection();
       }
     });
@@ -347,7 +414,7 @@ class itellaMapping {
       e.preventDefault();
       let force = false;
       /* Enter key forces search to not wait */
-      if (e.keyCode == '13') {
+      if (e.key === 'Enter') {
         force = true;
       }
       _this.searchNearestDebounce(this.value, force);
@@ -368,13 +435,47 @@ class itellaMapping {
     let select_options = select.querySelector('.dropdown-inner');
     drpd.addEventListener('click', function (e) {
       e.preventDefault();
-      select.classList.toggle('open');
+      _this.toggleDropdown(select, drpd);
     });
+
+    drpd.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        _this.toggleDropdown(select, drpd);
+      }
+      if (e.key === 'Escape') {
+        _this.closeDropdown(select, drpd);
+      }
+    });
+
+    select.addEventListener('keydown', function (e) {
+      let items = select.querySelectorAll('li.itella-terminal-data');
+      if (!items.length) return;
+      let highlighted = select.querySelector('li.itella-terminal-data.highlighted');
+      let active = select.querySelector('li.itella-terminal-data.active');
+      let index = highlighted ? Array.prototype.indexOf.call(items, highlighted)
+        : (active ? Array.prototype.indexOf.call(items, active) : -1);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        index = Math.min(index + 1, items.length - 1);
+        _this.highlightDropdownItem(items, index);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        index = Math.max(index - 1, 0);
+        _this.highlightDropdownItem(items, index);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlighted) highlighted.click();
+      } else if (e.key === 'Escape') {
+        _this.closeDropdown(select, drpd);
+      }
+    });
+
     this.UI.modal.addEventListener('click', function (e) {
       if (select.classList.contains('open')
         && !(select_options.contains(e.target) || drpd == e.target)
       ) {
-        select.classList.remove('open');
+        _this.closeDropdown(select, drpd);
       }
       if (_this._isDebug) {
         console.log('CLICKED HTML EL:', e.target.nodeName, e.target.dataset);
@@ -386,7 +487,7 @@ class itellaMapping {
         }
         _this.selectedPoint = point;
         _this.renderPointInfo(point);
-        select.classList.remove('open');
+        _this.closeDropdown(select, drpd);
         _this.setMapView(point.location, _this.ZOOM_SELECTED);
         _this.setActiveMarkerByTerminalId(e.target.dataset.id);
       }
@@ -503,7 +604,7 @@ class itellaMapping {
 
   calculateDistance(loc1, loc2) {
     let distance = NaN;
-    if ((loc1.lat == loc2.$lat) && (loc.lon == loc2.lon)) {
+    if ((loc1.lat == loc2.lat) && (loc1.lon == loc2.lon)) {
       return 0;
     } else {
       let theta = loc1.lon - loc2.lon;
@@ -794,10 +895,10 @@ class itellaMapping {
 
       /* check if we allready have html object, otherwise create new one */
       let li = Object.prototype.toString.call(loc._li) == '[object HTMLLIElement]' ? loc._li : _this.createElement('li', ['itella-terminal-data']);
-      li.innerHTML = loc.publicName + ', ' + loc.address.address;
+      li.textContent = loc.publicName + ', ' + loc.address.address;
       if (typeof loc.distance != 'undefined') {
         let span = _this.createElement('span');
-        span.innerText = loc.distance.toFixed(2);
+        span.innerText = loc.distance.toFixed(2) + ' km';
         li.appendChild(span);
       }
       li.dataset.id = loc.id;
