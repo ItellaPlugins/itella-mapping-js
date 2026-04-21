@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.3.3] - 2026-04-21
 ### Changed
 - Added "km" label next to distance value in pickup point dropdown list
 - Replaced deprecated `keyCode` with `e.key` for keyboard event handling
